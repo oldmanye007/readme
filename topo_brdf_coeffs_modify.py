@@ -52,7 +52,10 @@ def main():
             hyObj = ht.openENVI(image)
             hyObj.load_obs(args.obs[0])
         hyObj.create_bad_bands([[300,400],[1330,1430],[1800,1960],[2450,2600]])
+        
+        # no data  / ignored values varies by product
         hyObj.no_data =-0.9999
+        
         hyObj.load_data()
         
         # Generate mask
@@ -81,7 +84,7 @@ def main():
             cos_i = calc_cosine_i(hyObj.solar_zn, hyObj.solar_az, hyObj.azimuth , hyObj.slope)
             c1 = np.cos(hyObj.solar_zn) 
             c2 = np.cos(hyObj.slope)
-              
+            
             topomask = hyObj.mask & (cos_i > 0.12)  & (hyObj.slope > 0.087) 
               
         # Gernerate scattering kernel images for brdf correction
@@ -146,6 +149,7 @@ def main():
                             brdf_coeffs_List[ibin]['fIso'].append(fIso)
             print()
 
+    '''       
     # Compute topographic and BRDF coefficients using data from multiple scenes
     elif len(args.img) > 1:
         
@@ -242,7 +246,8 @@ def main():
                     brdf_coeffs['fVol'].append(fVol)
                     brdf_coeffs['fGeo'].append(fGeo)
                     brdf_coeffs['fIso'].append(fIso)
-        
+    '''
+    
     # Export coefficients to JSON
     if args.topo:
         topo_json = "%s%s_topo_coeffs.json" % (args.od,args.pref)

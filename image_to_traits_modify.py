@@ -51,11 +51,11 @@ def main():
     if not args.od.endswith("/"):
         args.od+="/"
     hyObj.create_bad_bands([[300,400],[1330,1430],[1800,1960],[2450,2600]])
+    
+    # no data  / ignored values varies by product
     hyObj.no_data =-0.9999
+    
     hyObj.load_data()
-
-    #print(len(hyObj.header_dict['band names'][hyObj.bad_bands]))
-    #sys.exit(1)
     
     # Generate mask
     if args.mask:
@@ -115,7 +115,6 @@ def main():
 
 
     if len(traits)!=0:
-        #print(' trait')
       
         #Cycle through the chunks and apply topo, brdf, vnorm,resampling and trait estimation steps
         print("Calculating values for %s traits....." % len(traits))
@@ -154,10 +153,6 @@ def main():
     #else:
     #  print('no trait')
       
-    #sys.exit(0)  
-    
-
-    
     hyObj.wavelengths = hyObj.wavelengths[hyObj.bad_bands]
     
     pixels_processed = 0
