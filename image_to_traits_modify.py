@@ -1,7 +1,7 @@
 import argparse,gdal,copy,sys,warnings
 import numpy as np, os,pandas as pd,glob,json, sys
 
-sys.path.append('H:/test/newhytool/HyTools-sandbox')   # need to modify the path
+sys.path.append('./HyTools-sandbox')   # need to modify the path
 
 import hytools as ht
 from hytools.brdf import *
@@ -147,8 +147,15 @@ def main():
         trait_waves_fwhm.sort(key = lambda x: x[0])
         
         # Create a single set of resampling coefficients for all wavelength and fwhm combos
-        resampling_coeffs = est_transform_matrix(hyObj.wavelengths[hyObj.bad_bands],[x for (x,y) in trait_waves_fwhm] ,hyObj.fwhm[hyObj.bad_bands],[y for (x,y) in trait_waves_fwhm],1)
-        
+        #resampling_coeffs = est_transform_matrix(hyObj.wavelengths[hyObj.bad_bands],[x for (x,y) in trait_waves_fwhm] ,hyObj.fwhm[hyObj.bad_bands],[y for (x,y) in trait_waves_fwhm],1)
+
+        # if wavelengths match, no need to resample
+        check_wave_match_result = check_wave_match(hyObj, [x for (x,y) in trait_waves_fwhm])
+        if (check_wave_match_result['flag']):
+            match_flag = True
+        else:
+            match_flag = False
+            resampling_coeffs = est_transform_matrix(hyObj.wavelengths[hyObj.bad_bands],[x for (x,y) in trait_waves_fwhm] ,hyObj.fwhm[hyObj.bad_bands],[y for (x,y) in trait_waves_fwhm],1) #2        
         
     #else:
     #  print('no trait')
@@ -156,7 +163,7 @@ def main():
     hyObj.wavelengths = hyObj.wavelengths[hyObj.bad_bands]
     
     pixels_processed = 0
-    iterator = hyObj.iterate(by = 'chunk',chunk_size = (100,100))
+    iterator = hyObj.iterate(by = 'chunk',chunk_size = (32,hyObj.columns))
 
     while not iterator.complete:  
         chunk = iterator.read_next()  
@@ -238,8 +245,13 @@ def main():
 
         if len(traits)>0:
         # Resample chunk 
-          chunk_r = np.dot(chunk, resampling_coeffs) 
-
+          #chunk_r = np.dot(chunk, resampling_coeffs) 
+          if match_flag==False:            
+              chunk_r = np.dot(chunk, resampling_coeffs) 
+          # sunset of chunk?
+          else:
+              chunk_r = chunk[:,:,check_wave_match_result['index']]
+                
         # Export RGBIM image
         if args.rgbim:
             dstFile = args.od + os.path.splitext(os.path.basename(args.img))[0] + '_rgbim.tif'
@@ -274,9 +286,16 @@ def main():
                 header_dict['wavelength']= header_dict['wavelength'][hyObj.bad_bands]
                 header_dict['fwhm'] = header_dict['fwhm'][hyObj.bad_bands]
                 #header_dict['bbl'] = header_dict['bbl'][hyObj.bad_bands]
-                if 'band names' in header_dict:  
-                  del header_dict['band names']
+                #if 'band names' in header_dict:  
+                #  del header_dict['band names']
                 header_dict['bands'] = hyObj.bad_bands.sum()
+                
+                # clean ENVI header
+                header_dict.pop('band names', None)
+                header_dict.pop('correction factors', None)
+                header_dict.pop('bbl', None)                
+                header_dict.pop('smoothing factors', None)               
+                
                 writer = writeENVI(output_name,header_dict)
             writer.write_chunk(chunk,iterator.current_line,iterator.current_column)
             if iterator.complete:
