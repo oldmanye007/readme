@@ -213,7 +213,7 @@ def main():
               veg_mask = brdfmask[ibin,line_start:line_end,col_start:col_end][:,:,np.newaxis]
               
               new_k_vol +=  brdf_coeffs_List[ibin]['fVol'] * veg_mask
-              new_k_geom + brdf_coeffs_List[ibin]['fGeo'] * veg_mask
+              new_k_geom += brdf_coeffs_List[ibin]['fGeo'] * veg_mask
               new_k_iso += brdf_coeffs_List[ibin]['fIso'] * veg_mask
             
             #new_k_vol = brdf_df1.k_vol.values * v_msk1 + brdf_df2.k_vol.values * v_msk2 + brdf_df3.k_vol.values * v_msk3  # + brdf_df4.k_vol.values * v_msk4
