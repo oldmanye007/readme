@@ -167,7 +167,7 @@ def main():
 
     while not iterator.complete:  
         chunk = iterator.read_next()  
-        chunk_nodata_mask = chunk[:,:,1] == hyObj.no_data
+        chunk_nodata_mask = chunk[:,:,50] == hyObj.no_data  # 50th band
         pixels_processed += chunk.shape[0]*chunk.shape[1]
         #progbar(pixels_processed, hyObj.columns*hyObj.lines, 100)
 
