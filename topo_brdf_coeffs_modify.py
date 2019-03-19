@@ -141,6 +141,7 @@ def main():
                 
             k_vol = generate_volume_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,hyObj.sensor_zn, ross = ross)
             k_geom = generate_geom_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,hyObj.sensor_zn,li = li)
+            k_finite = np.isfinite(k_vol) & np.isfinite(k_geom)
     
         # Cycle through the bands and calculate the topographic and BRDF correction coefficients
         print("Calculating image correction coefficients.....")
@@ -149,13 +150,14 @@ def main():
         if args.topo or args.brdf:
             while not iterator.complete:   
                 band = iterator.read_next() 
+                mask_finite = band > 0.0001
                 progbar(iterator.current_band+1, len(hyObj.wavelengths), 100)
                 #Skip bad bands
                 if hyObj.bad_bands[iterator.current_band]:
                     # Generate topo correction coefficients
                     if args.topo:
                         
-                        topo_coeff= generate_topo_coeff_band(band,topomask,cos_i)
+                        topo_coeff= generate_topo_coeff_band(band,topomask & mask_finite,cos_i)
                         topo_coeffs['c'].append(topo_coeff)
 
                     # Gernerate BRDF correction coefficients
@@ -168,7 +170,7 @@ def main():
                             band = band* correctionFactor
                             
                         for ibin in range(total_bin):
-                            fVol,fGeo,fIso =  generate_brdf_coeff_band(band,brdfmask[ibin,:,:],k_vol,k_geom)
+                            fVol,fGeo,fIso =  generate_brdf_coeff_band(band,brdfmask[ibin,:,:] & mask_finite & k_finite,k_vol,k_geom)
                             brdf_coeffs_List[ibin]['fVol'].append(fVol)
                             brdf_coeffs_List[ibin]['fGeo'].append(fGeo)
                             brdf_coeffs_List[ibin]['fIso'].append(fIso)
