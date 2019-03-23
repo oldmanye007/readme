@@ -288,7 +288,7 @@ def main():
                 #header_dict['bbl'] = header_dict['bbl'][hyObj.bad_bands]
                 #if 'band names' in header_dict:  
                 #  del header_dict['band names']
-                header_dict['bands'] = hyObj.bad_bands.sum()
+                header_dict['bands'] = int(hyObj.bad_bands.sum())
                 
                 # clean ENVI header
                 header_dict.pop('band names', None)
