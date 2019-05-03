@@ -19,6 +19,29 @@ def progbar(curr, total, full_progbar):
     filled_progbar = round(frac*full_progbar)
     print('\r', '#'*filled_progbar + '-'*(full_progbar-filled_progbar), '[{:>7.2%}]'.format(frac), end='')
 
+def check_wave_match(hyObj, dst_wave_list):
+    
+    wavelengths = hyObj.wavelengths[hyObj.bad_bands]
+    match_index_list = []
+    for single_wave in dst_wave_list:
+    
+        if hyObj.wavelength_units == "micrometers" and single_wave > 3:
+            single_wave/= 1000
+        if hyObj.wavelength_units == "nanometers" and single_wave < 3:
+            single_wave*= 1000    
+    
+        if single_wave in wavelengths:
+            wave_band = np.argwhere(single_wave == wavelengths)[0][0]
+        elif (single_wave  > wavelengths.max()) | (single_wave  < wavelengths.min()):
+            return {'flag':False}
+        else: 
+            wave_band = np.argmin(np.abs(wavelengths - single_wave))    
+            if abs(wavelengths[wave_band]-single_wave) > 0.5:
+              #print(wave_band, abs(wavelengths[wave_band]-single_wave),single_wave,wavelengths[wave_band])
+              return {'flag':False}            
+            match_index_list = match_index_list + [wave_band]
+    return {'flag':True, 'index':match_index_list}        
+    
 def main():
     '''
     Perform in-memory trait estimation.
@@ -248,7 +271,7 @@ def main():
           #chunk_r = np.dot(chunk, resampling_coeffs) 
           if match_flag==False:            
               chunk_r = np.dot(chunk, resampling_coeffs) 
-          # sunset of chunk?
+          # subset of chunk
           else:
               chunk_r = chunk[:,:,check_wave_match_result['index']]
                 
