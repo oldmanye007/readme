@@ -59,6 +59,7 @@ def main():
     parser.add_argument("--rgbim", help="Export RGBI +Mask image.", action='store_true')
     #parser.add_argument("-coeffs", help="Trait coefficients directory", required=True, type = str)
     parser.add_argument("-coeffs", help="Trait coefficients directory", required=False, type = str)
+    parser.add_argument("-nodata", help="New value to assign for no_data values", required=False, type = float)
     args = parser.parse_args()
 
 
@@ -110,11 +111,16 @@ def main():
     
     # Gernerate scattering kernel images for brdf correction
     if len(args.brdf) != 0:
-
-        total_bin = len(args.mask_threshold)+1
         brdf_coeffs_List = []
+
+        if (args.mask_threshold):
+          total_bin = len(args.mask_threshold)+1
+          ndvi_thres = [0.05]+ args.mask_threshold +[1.0]
+        else:
+          total_bin=1
+          ndvi_thres = [0.05, 1.0]
     
-        ndvi_thres = [0.05]+ args.mask_threshold +[1.0]
+        #ndvi_thres = [0.05]+ args.mask_threshold +[1.0]
         brdfmask = np.ones((total_bin, hyObj.lines,hyObj.columns )).astype(bool)
             
         for ibin in range(total_bin):
@@ -190,9 +196,9 @@ def main():
 
     while not iterator.complete:  
         chunk = iterator.read_next()  
-        chunk_nodata_mask = chunk[:,:,50] == hyObj.no_data  # 50th band
+        chunk_nodata_mask = chunk[:,:,10] == hyObj.no_data  # 10th band
         pixels_processed += chunk.shape[0]*chunk.shape[1]
-        #progbar(pixels_processed, hyObj.columns*hyObj.lines, 100)
+        progbar(pixels_processed, hyObj.columns*hyObj.lines, 100)
 
         # Chunk Array indices
         line_start =iterator.current_line 
@@ -206,7 +212,7 @@ def main():
             c1_chunk = c1[line_start:line_end,col_start:col_end]
             c2_chunk = c2[line_start:line_end,col_start:col_end]
             topomask_chunk = topomask[line_start:line_end,col_start:col_end,np.newaxis]
-            correctionFactor = (c2_chunk[:,:,np.newaxis]+topo_coeffs['c'] / c1_chunk[:,:,np.newaxis] )/(cos_i_chunk[:,:,np.newaxis] + topo_coeffs['c'])
+            correctionFactor = (c2_chunk[:,:,np.newaxis]*c1_chunk[:,:,np.newaxis] +topo_coeffs['c']  )/(cos_i_chunk[:,:,np.newaxis] + topo_coeffs['c'])
             correctionFactor = correctionFactor*topomask_chunk + 1.0*(1-topomask_chunk)
             chunk = chunk[:,:,hyObj.bad_bands]* correctionFactor
         else:
@@ -263,7 +269,7 @@ def main():
             
         
         #Reassign no data values
-        chunk[chunk_nodata_mask,:] = 0
+        chunk[chunk_nodata_mask,:] = args.nodata
         
 
         if len(traits)>0:
@@ -309,8 +315,8 @@ def main():
                 header_dict['wavelength']= header_dict['wavelength'][hyObj.bad_bands]
                 header_dict['fwhm'] = header_dict['fwhm'][hyObj.bad_bands]
                 #header_dict['bbl'] = header_dict['bbl'][hyObj.bad_bands]
-                #if 'band names' in header_dict:  
-                #  del header_dict['band names']
+                if 'band names' in header_dict:  
+                  del header_dict['band names']
                 header_dict['bands'] = int(hyObj.bad_bands.sum())
                 
                 # clean ENVI header
@@ -400,6 +406,3 @@ def main():
 if __name__== "__main__":
     main()
 
-
-
-#python image_to_traits.py -img image.h5 -od /data/tmp --brdf /data/tmp/test_brdf_coeffs.json --topo /data/tmp/test_topo_coeffs.json --mask --mask_threshold .7 --rgbim -coeffs /data/tmp/test

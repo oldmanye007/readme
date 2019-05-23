@@ -110,13 +110,19 @@ def main():
             c1 = np.cos(hyObj.solar_zn) 
             c2 = np.cos(hyObj.slope)
             
-            topomask = hyObj.mask & (cos_i > 0.12)  & (hyObj.slope > 0.087) 
+            terrain_msk = (cos_i > 0.12)  & (hyObj.slope > 0.087)
+            topomask = hyObj.mask #& (cos_i > 0.12)  & (hyObj.slope > 0.087) 
               
         # Gernerate scattering kernel images for brdf correction
         if args.brdf:
-
-            ndvi_thres = [0.005]+ args.mask_threshold +[1.0]
-            total_bin = len(args.mask_threshold)+1
+        
+            if args.mask_threshold:
+              ndvi_thres = [0.005]+ args.mask_threshold +[1.0]
+              total_bin = len(args.mask_threshold)+1
+            else:
+              ndvi_thres = [0.005,1.0]
+              total_bin = 1  
+\
             brdfmask = np.ones(( total_bin, hyObj.lines, hyObj.columns )).astype(bool)
             
             for ibin in range(total_bin):
@@ -127,7 +133,13 @@ def main():
             # Initialize BRDF dictionary
             
             brdf_coeffs_List = [] #initialize
+            brdf_mask_stat = np.zeros(total_bin)
+            
             for ibin in range(total_bin):
+                brdf_mask_stat[ibin] = np.count_nonzero(brdfmask[ibin,:,:])
+                if brdf_mask_stat[ibin] < 100:
+                  continue
+                  
                 brdf_coeffs = {}
                 brdf_coeffs['li'] = li
                 brdf_coeffs['ross'] = ross
@@ -150,31 +162,38 @@ def main():
         if args.topo or args.brdf:
             while not iterator.complete:   
                 band = iterator.read_next() 
-                mask_finite = band > 0.0001
+                #mask_finite = band > 0.0001
+                band_msk = (band>0.001) & (band<0.9)
                 progbar(iterator.current_band+1, len(hyObj.wavelengths), 100)
                 #Skip bad bands
                 if hyObj.bad_bands[iterator.current_band]:
                     # Generate topo correction coefficients
                     if args.topo:
-                        
-                        topo_coeff= generate_topo_coeff_band(band,topomask & mask_finite,cos_i)
+ 
+                        topomask_b = topomask & band_msk
+                            
+                        topo_coeff= generate_topo_coeff_band(band,topomask_b & terrain_msk,cos_i)
                         topo_coeffs['c'].append(topo_coeff)
 
                     # Gernerate BRDF correction coefficients
                     if args.brdf:
                         if args.topo:
-                            # Apply topo correction to current band
-                            # SCS+C normalizes reflectance to ndir, but for input of brdf correction, it should be un-normalized
-                            correctionFactor = (c2 + topo_coeff / c1 )/(cos_i + topo_coeff)
-                            correctionFactor = correctionFactor*topomask + 1.0*(1-topomask) # only apply to orographic area
+                            # Apply topo correction to current band                            
+                            correctionFactor = (c2*c1 + topo_coeff  )/(cos_i + topo_coeff)
+                            correctionFactor = correctionFactor*topomask_b + 1.0*(1-topomask_b) # only apply to orographic area
                             band = band* correctionFactor
                             
                         for ibin in range(total_bin):
-                            fVol,fGeo,fIso =  generate_brdf_coeff_band(band,brdfmask[ibin,:,:] & mask_finite & k_finite,k_vol,k_geom)
+                            if brdf_mask_stat[ibin]<100:
+                              continue
+                              
+                            band_msk_new = (band>0.001) & (band<0.9)  
+                              
+                            fVol,fGeo,fIso =  generate_brdf_coeff_band(band,brdfmask[ibin,:,:] & band_msk & k_finite & band_msk_new ,k_vol,k_geom)
                             brdf_coeffs_List[ibin]['fVol'].append(fVol)
                             brdf_coeffs_List[ibin]['fGeo'].append(fGeo)
                             brdf_coeffs_List[ibin]['fIso'].append(fIso)
-            print()
+            #print()
 
     '''       
     # Compute topographic and BRDF coefficients using data from multiple scenes
