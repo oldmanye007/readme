@@ -122,7 +122,7 @@ def main():
             else:
               ndvi_thres = [0.005,1.0]
               total_bin = 1  
-\
+
             brdfmask = np.ones(( total_bin, hyObj.lines, hyObj.columns )).astype(bool)
             
             for ibin in range(total_bin):
