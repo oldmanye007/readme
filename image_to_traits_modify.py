@@ -59,7 +59,7 @@ def main():
     parser.add_argument("--rgbim", help="Export RGBI +Mask image.", action='store_true')
     #parser.add_argument("-coeffs", help="Trait coefficients directory", required=True, type = str)
     parser.add_argument("-coeffs", help="Trait coefficients directory", required=False, type = str)
-    parser.add_argument("-nodata", help="New value to assign for no_data values", required=False, type = float)
+    parser.add_argument("-nodata", help="New value to assign for no_data values", required=False, type = float, default =-9999)
     args = parser.parse_args()
 
 
@@ -394,8 +394,8 @@ def main():
             
             
             # Change no data pixel values
-            trait_mean[chunk_nodata_mask] = 0
-            trait_std[chunk_nodata_mask] = 0
+            trait_mean[chunk_nodata_mask] = args.nodata
+            trait_std[chunk_nodata_mask] = args.nodata
 
             # Write trait estimate to file
             trait_geotiff = gdal.Open(dstFile, gdal.GA_Update)
