@@ -412,7 +412,3 @@ def main():
                 
 if __name__== "__main__":
     main()
-
-#python topo_brdf_coeffs.py --img --pref --brdf --kernels dense thick --mask --mask_threshold .7 --samp_perc 0.1
-
-
