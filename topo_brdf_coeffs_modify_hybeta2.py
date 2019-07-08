@@ -64,9 +64,8 @@ def main():
     parser.add_argument("--agmask", help="ag / urban mask file", required=False, type = str)
     parser.add_argument("--topo_sep", help="In multiple image mode, perform topographic correction in a image-based fasion", action='store_true')
     
-    args = parser.parse_args()
+    args = parser.parse_args()      
     
-
     if not args.od.endswith("/"):
         args.od+="/"
 
@@ -391,7 +390,8 @@ def main():
       else:
         #print(len(topo_coeff_list))
         for i_img in range(len(args.img)):
-            topo_json = "%s%s_%s_topo_coeffs.json" % (args.od,args.pref,i_img)
+            filename_pref = (os.path.basename(args.img[i_img])).split('_')[0]
+            topo_json = "%s%s_topo_coeffs.json" % (args.od,filename_pref)
             with open(topo_json, 'w') as outfile:
                 json.dump(topo_coeff_list[i_img],outfile)            
 
