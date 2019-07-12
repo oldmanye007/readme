@@ -1,8 +1,8 @@
 import argparse,gdal,copy,sys,warnings
 import numpy as np, os,pandas as pd,glob,json, sys
 
-sys.path.append('./HyTools-sandbox')   # need to modify the path
-
+#sys.path.append('./HyTools-sandbox')   # need to modify the path
+sys.path.append('H:/test/hytool2019v2/HyTools-sandbox') 
 
 import hytools as ht
 from hytools.brdf import *
@@ -14,6 +14,17 @@ from hytools.file_io import array_to_geotiff,writeENVI
 home = os.path.expanduser("~")
 
 warnings.filterwarnings("ignore")
+
+NO_DATA_VALUE = -0.9999  # -9999
+
+NDVI_APPLIED_BIN_MIN_THRESHOLD = 0.05
+NDVI_APPLIED_BIN_MAX_THRESHOLD = 1.0
+
+COSINE_I_MIN_THRESHOLD = 0.12
+SLOPE_MIN_THRESHOLD = 0.087
+
+CHUNCK_EDGE_SIZE = 32
+
 
 def progbar(curr, total, full_progbar):
     frac = curr/total
@@ -78,7 +89,7 @@ def main():
     hyObj.create_bad_bands([[300,400],[1330,1430],[1800,1960],[2450,2600]])
     
     # no data  / ignored values varies by product
-    hyObj.no_data =-0.9999
+    hyObj.no_data = NO_DATA_VALUE
     
     hyObj.load_data()
     
@@ -89,7 +100,7 @@ def main():
         ndvi = (ir-red)/(ir+red)
         #mask = (ndvi > args.mask_threshold) & (ir != hyObj.no_data)
         #mask = (ndvi > 0.05) & (ir != hyObj.no_data)
-        hyObj.mask = (ndvi > 0.05) & (ir != hyObj.no_data) 
+        hyObj.mask = (ndvi > NDVI_APPLIED_BIN_MIN_THRESHOLD) & (ir != hyObj.no_data) 
         del ir,red #,ndvi
     else:
         hyObj.mask = np.ones((hyObj.lines,hyObj.columns)).astype(bool)
@@ -105,7 +116,7 @@ def main():
         c1 = np.cos(hyObj.solar_zn)
         c2 = np.cos(hyObj.slope)
         
-        topomask = hyObj.mask & (cos_i > 0.12)  & (hyObj.slope > 0.087)
+        topomask = hyObj.mask & (cos_i > COSINE_I_MIN_THRESHOLD)  & (hyObj.slope > SLOPE_MIN_THRESHOLD)
            
     #total_bin = len(args.mask_threshold)+1
     #brdf_coeffs_List = []
@@ -116,10 +127,10 @@ def main():
 
         if (args.mask_threshold):
           total_bin = len(args.mask_threshold)+1
-          ndvi_thres = [0.05]+ args.mask_threshold +[1.0]
+          ndvi_thres = [NDVI_APPLIED_BIN_MIN_THRESHOLD]+ args.mask_threshold +[NDVI_APPLIED_BIN_MAX_THRESHOLD]
         else:
           total_bin=1
-          ndvi_thres = [0.05, 1.0]
+          ndvi_thres = [NDVI_APPLIED_BIN_MIN_THRESHOLD, NDVI_APPLIED_BIN_MAX_THRESHOLD]
     
         brdfmask = np.ones((total_bin, hyObj.lines,hyObj.columns )).astype(bool)
             
@@ -190,7 +201,7 @@ def main():
     hyObj.wavelengths = hyObj.wavelengths[hyObj.bad_bands]
     
     pixels_processed = 0
-    iterator = hyObj.iterate(by = 'chunk',chunk_size = (32,hyObj.columns))
+    iterator = hyObj.iterate(by = 'chunk',chunk_size = (CHUNCK_EDGE_SIZE,hyObj.columns))
 
     while not iterator.complete:  
         chunk = iterator.read_next()  

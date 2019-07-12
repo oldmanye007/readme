@@ -4,8 +4,8 @@
 import argparse,warnings,copy
 import numpy as np, os,json, sys
 
-sys.path.append('./HyTools-sandbox')   # need to modify the path
-
+#sys.path.append('./HyTools-sandbox')   # need to modify the path
+sys.path.append('H:/test/hytool2019v2/HyTools-sandbox') 
 
 import hytools as ht
 from hytools.brdf import *
@@ -14,6 +14,25 @@ from hytools.helpers import *
 home = os.path.expanduser("~")
 
 warnings.filterwarnings("ignore")
+
+NO_DATA_VALUE = -0.9999  # -9999
+
+REFL_MIN_THRESHOLD = 0.001 # 10
+REFL_MAX_THRESHOLD = 0.9  # 9000
+
+NDVI_MIN_THRESHOLD = 0.01
+NDVI_MAX_THRESHOLD = 1.0
+NDVI_BIN_MIN_THRESHOLD = 0.05 #0.005
+NDVI_BIN_MAX_THRESHOLD = 1.0
+
+COSINE_I_MIN_THRESHOLD = 0.12
+SLOPE_MIN_THRESHOLD = 0.087
+SAMPLE_SLOPE_MIN_THRESHOLD = 0.03
+
+MIN_SAMPLE_COUNT = 100
+
+SENSOR_ZENITH_MIN_DEG = 2
+
 
 def progbar(curr, total, full_progbar):
     frac = curr/total
@@ -64,8 +83,9 @@ def main():
     parser.add_argument("--agmask", help="ag / urban mask file", required=False, type = str)
     parser.add_argument("--topo_sep", help="In multiple image mode, perform topographic correction in a image-based fasion", action='store_true')
     
-    args = parser.parse_args()      
-    
+    args = parser.parse_args()   
+
+
     if not args.od.endswith("/"):
         args.od+="/"
 
@@ -81,7 +101,7 @@ def main():
         hyObj.create_bad_bands([[300,400],[1330,1430],[1800,1960],[2450,2600]])
         
         # no data  / ignored values varies by product
-        hyObj.no_data =-0.9999
+        hyObj.no_data = NO_DATA_VALUE
         
         hyObj.load_data()
         
@@ -95,7 +115,7 @@ def main():
             if args.agmask:
               ag_mask =  np.fromfile(args.agmask, dtype=np.uint8).reshape((hyObj.lines,hyObj.columns))
 
-            hyObj.mask = (ndvi > 0.01) & (ndvi < 1.0) & (ir != hyObj.no_data) & (ag_mask ==0)
+            hyObj.mask = (ndvi > NDVI_MIN_THRESHOLD) & (ndvi < NDVI_MAX_THRESHOLD) & (ir != hyObj.no_data) & (ag_mask ==0)
             del ir,red #,ndvi
         else:
             hyObj.mask = np.ones((hyObj.lines,hyObj.columns)).astype(bool)
@@ -112,23 +132,23 @@ def main():
             c1 = np.cos(hyObj.solar_zn) 
             c2 = np.cos(hyObj.slope)
             
-            terrain_msk = (cos_i > 0.12)  & (hyObj.slope > 0.087)
+            terrain_msk = (cos_i > COSINE_I_MIN_THRESHOLD)  & (hyObj.slope > SLOPE_MIN_THRESHOLD)
             topomask = hyObj.mask #& (cos_i > 0.12)  & (hyObj.slope > 0.087) 
               
         # Gernerate scattering kernel images for brdf correction
         if args.brdf:
         
             if args.mask_threshold:
-              ndvi_thres = [0.005]+ args.mask_threshold +[1.0]
+              ndvi_thres = [NDVI_BIN_MIN_THRESHOLD]+ args.mask_threshold +[NDVI_BIN_MAX_THRESHOLD]
               total_bin = len(args.mask_threshold)+1
             else:
-              ndvi_thres = [0.005,1.0]
+              ndvi_thres = [NDVI_BIN_MIN_THRESHOLD , NDVI_BIN_MAX_THRESHOLD]
               total_bin = 1  
 
             brdfmask = np.ones(( total_bin, hyObj.lines, hyObj.columns )).astype(bool)
             
             for ibin in range(total_bin):
-              brdfmask[ibin,:,:] = hyObj.mask & (ndvi > ndvi_thres[ibin]) & (ndvi <= ndvi_thres[ibin+1]) &  (hyObj.sensor_zn > np.radians(2))
+              brdfmask[ibin,:,:] = hyObj.mask & (ndvi > ndvi_thres[ibin]) & (ndvi <= ndvi_thres[ibin+1]) &  (hyObj.sensor_zn > np.radians(SENSOR_ZENITH_MIN_DEG))
 
         
             li,ross =  args.kernels
@@ -139,7 +159,7 @@ def main():
             
             for ibin in range(total_bin):
                 brdf_mask_stat[ibin] = np.count_nonzero(brdfmask[ibin,:,:])
-                if brdf_mask_stat[ibin] < 100:
+                if brdf_mask_stat[ibin] < MIN_SAMPLE_COUNT:
                   continue
                   
                 brdf_coeffs = {}
@@ -165,7 +185,7 @@ def main():
             while not iterator.complete:   
                 band = iterator.read_next() 
                 #mask_finite = band > 0.0001
-                band_msk = (band>0.001) & (band<0.9)
+                band_msk = (band> REFL_MIN_THRESHOLD) & (band<REFL_MAX_THRESHOLD)
                 progbar(iterator.current_band+1, len(hyObj.wavelengths), 100)
                 #Skip bad bands
                 if hyObj.bad_bands[iterator.current_band]:
@@ -186,10 +206,10 @@ def main():
                             band = band* correctionFactor
                             
                         for ibin in range(total_bin):
-                            if brdf_mask_stat[ibin]<100:
+                            if brdf_mask_stat[ibin]<MIN_SAMPLE_COUNT:
                               continue
                               
-                            band_msk_new = (band>0.001) & (band<0.9)  
+                            band_msk_new = (band> REFL_MIN_THRESHOLD) & (band< REFL_MAX_THRESHOLD)  
                               
                             fVol,fGeo,fIso =  generate_brdf_coeff_band(band,brdfmask[ibin,:,:] & band_msk & k_finite & band_msk_new ,k_vol,k_geom)
                             brdf_coeffs_List[ibin]['fVol'].append(fVol)
@@ -205,10 +225,10 @@ def main():
         
             li,ross =  args.kernels
             if args.mask_threshold:
-              ndvi_thres = [0.005]+ args.mask_threshold +[1.0]
+              ndvi_thres = [NDVI_BIN_MIN_THRESHOLD]+ args.mask_threshold +[ NDVI_BIN_MAX_THRESHOLD ]
               total_bin = len(args.mask_threshold)+1
             else:
-              ndvi_thres = [0.005,1.0]
+              ndvi_thres = [NDVI_BIN_MIN_THRESHOLD, NDVI_BIN_MAX_THRESHOLD]
               total_bin = 1   
 
             brdf_coeffs_List = [] #initialize
@@ -247,7 +267,7 @@ def main():
                 hyObj = ht.openENVI(image)
                 hyObj.load_obs(args.obs[i])
             hyObj.create_bad_bands([[300,400],[1330,1430],[1800,1960],[2450,2600]])
-            hyObj.no_data = -0.9999
+            hyObj.no_data = NO_DATA_VALUE
             hyObj.load_data()
             
             # Generate mask
@@ -255,7 +275,7 @@ def main():
                 ir = hyObj.get_wave(850)
                 red = hyObj.get_wave(665)
                 ndvi = (1.0*ir-red)/(1.0*ir+red)
-                hyObj.mask  =  (ndvi > 0.01) & (ndvi <= 1.0) & (ir != hyObj.no_data)#(ndvi > .5) & (ir != hyObj.no_data) #(ndvi > .01) & (ir != hyObj.no_data)
+                hyObj.mask  =  (ndvi > NDVI_MIN_THRESHOLD) & (ndvi <= NDVI_MAX_THRESHOLD) & (ir != hyObj.no_data)#(ndvi > .5) & (ir != hyObj.no_data) #(ndvi > .01) & (ir != hyObj.no_data)
 
                 del ir,red  #,ndvi
             else:
@@ -338,8 +358,8 @@ def main():
                 # Generate cosine i and c1 image for topographic correction
                 if args.topo:    
                   if args.topo_sep==False:
-                    #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples>10) & (wave_samples<9000) & (sample_cos_i> 0.12) &  (sample_slope> 0.05) ,sample_cos_i)
-                    topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples>0.01) & (wave_samples<0.9) & (sample_cos_i> 0.12) &  (sample_slope> 0.087) ,sample_cos_i)
+                    #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SLOPE_MIN_THRESHOLD) ,sample_cos_i)
+                    topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples> REFL_MIN_THRESHOLD) & (wave_samples<REFL_MAX_THRESHOLD ) & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SLOPE_MIN_THRESHOLD) ,sample_cos_i)
                     topo_coeffs['c'].append(topo_coeff)
                     correctionFactor = (sample_c1 + topo_coeff)/(sample_cos_i + topo_coeff)
                     #print(correctionFactor)
@@ -354,8 +374,8 @@ def main():
                         sample_c1_sub = sample_c1[sample_index[i]:sample_index[i+1]]
 
                         
-                        #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples_sub>10) & (wave_samples_sub<9000) & (sample_cos_i_sub> 0.12) &  (sample_slope_sub> 0.05) ,sample_cos_i_sub)
-                        topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub>0.01) & (wave_samples_sub<0.9) & (sample_cos_i_sub> 0.12) &  (sample_slope_sub> 0.087) ,sample_cos_i_sub)
+                        #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub<REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
+                        topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
                         topo_coeff_list[i]['c'].append(topo_coeff)
 
                         #topo_coeff_list+=[topo_coeffs_img]
@@ -365,12 +385,12 @@ def main():
                 # Gernerate scattering kernel images for brdf correction
                 if args.brdf:
                 
-                    temp_mask = (wave_samples>0.01) & (wave_samples<0.9) & np.isfinite(sample_k_vol) & np.isfinite(sample_k_geom)
-                    temp_mask = temp_mask & (sample_cos_i> 0.12) &  (sample_slope> 0.03) 
+                    temp_mask = (wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & np.isfinite(sample_k_vol) & np.isfinite(sample_k_geom)
+                    temp_mask = temp_mask & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SAMPLE_SLOPE_MIN_THRESHOLD) 
                 
                     for ibin in range(total_bin):
 
-                        if brdf_mask_stat[ibin]<100:
+                        if brdf_mask_stat[ibin]<MIN_SAMPLE_COUNT:
                           continue
                           
                         fVol,fGeo,fIso = generate_brdf_coeff_band(wave_samples, temp_mask & ndvi_mask_dict[ibin]  ,sample_k_vol,sample_k_geom)    
@@ -383,7 +403,7 @@ def main():
     
     # Export coefficients to JSON           
     if args.topo:
-      if args.topo_sep==False:
+      if (args.topo_sep==False) or (len(args.img) ==1):
         topo_json = "%s%s_topo_coeffs.json" % (args.od,args.pref)
         with open(topo_json, 'w') as outfile:
             json.dump(topo_coeffs,outfile) 
@@ -399,7 +419,7 @@ def main():
     if args.brdf:
       if total_bin>0:
         for ibin in range(total_bin):            
-            if brdf_mask_stat[ibin]<100:
+            if brdf_mask_stat[ibin] < MIN_SAMPLE_COUNT:
               continue
             brdf_json = "%s%s_brdf_coeffs_%s.json" % (args.od,args.pref,str(ibin+1))
             with open(brdf_json, 'w') as outfile:
