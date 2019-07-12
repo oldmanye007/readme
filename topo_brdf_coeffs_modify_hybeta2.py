@@ -5,7 +5,7 @@ import argparse,warnings,copy
 import numpy as np, os,json, sys
 
 #sys.path.append('./HyTools-sandbox')   # need to modify the path
-sys.path.append('H:/test/hytool2019v2/HyTools-sandbox') 
+
 
 import hytools as ht
 from hytools.brdf import *
