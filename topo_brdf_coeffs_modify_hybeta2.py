@@ -299,16 +299,21 @@ def main():
             # Initialize and store band iterator
             hyObj_dict[i] = copy.copy(hyObj).iterate(by = 'band')
             
-            # Generate cosine i and c1 image for topographic correction
+            # Generate cosine i and slope samples
+            sample_cos_i += calc_cosine_i(hyObj.solar_zn, hyObj.solar_az, hyObj.azimuth , hyObj.slope)[sampleArray].tolist()
+            sample_slope += (hyObj.slope)[sampleArray].tolist()
+            
+            # Generate c1 samples for topographic correction
             if args.topo:   
                 # Initialize topographic correction dictionary
                 topo_coeffs = {}
                 topo_coeffs['wavelengths'] = hyObj.wavelengths[hyObj.bad_bands].tolist() 
                 topo_coeffs['c'] = []
-                sample_cos_i += calc_cosine_i(hyObj.solar_zn, hyObj.solar_az, hyObj.azimuth , hyObj.slope)[sampleArray].tolist()
+                #sample_cos_i += calc_cosine_i(hyObj.solar_zn, hyObj.solar_az, hyObj.azimuth , hyObj.slope)[sampleArray].tolist()
                 sample_c1 += (np.cos(hyObj.solar_zn) * np.cos( hyObj.slope))[sampleArray].tolist()
-                sample_slope += (hyObj.slope)[sampleArray].tolist()
-            # Gernerate scattering kernel images for brdf correction
+                #sample_slope += (hyObj.slope)[sampleArray].tolist()
+            
+            # Gernerate scattering kernel samples for brdf correction
             if args.brdf:
             
                 sample_ndvi += (ndvi)[sampleArray].tolist()  
@@ -358,7 +363,6 @@ def main():
                 # Generate cosine i and c1 image for topographic correction
                 if args.topo:    
                   if args.topo_sep==False:
-                    #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SLOPE_MIN_THRESHOLD) ,sample_cos_i)
                     topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples> REFL_MIN_THRESHOLD) & (wave_samples<REFL_MAX_THRESHOLD ) & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SLOPE_MIN_THRESHOLD) ,sample_cos_i)
                     topo_coeffs['c'].append(topo_coeff)
                     correctionFactor = (sample_c1 + topo_coeff)/(sample_cos_i + topo_coeff)
@@ -374,7 +378,6 @@ def main():
                         sample_c1_sub = sample_c1[sample_index[i]:sample_index[i+1]]
 
                         
-                        #topo_coeff  = generate_topo_coeff_band(wave_samples,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub<REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
                         topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
                         topo_coeff_list[i]['c'].append(topo_coeff)
 
