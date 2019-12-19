@@ -530,11 +530,11 @@ def main():
                         # update diagnostic information scene by scene
                         for img_order in range(total_image):
 
-                          img_mask_sub = (sample_img_tag[mask_sub]==(img_order+1))
+                          img_mask_sub = (sample_img_tag==(img_order+1)) & mask_sub
 
                           est_r2, sample_nn, rmse_bin = cal_r2(wave_samples[img_mask_sub],sample_k_vol[img_mask_sub],sample_k_geom[img_mask_sub],[fVol,fGeo,fIso])
                           r_squared_array[ibin+(img_order+1)*total_bin,w+3]=est_r2
-                          r_squared_array[ibin+(img_order+1)*total_bin,2]=max(sample_nn,r_squared_array[ibin+(img_order+1)*total_bin,2]) # undate many times
+                          r_squared_array[ibin+(img_order+1)*total_bin,2]=max(sample_nn,int(r_squared_array[ibin+(img_order+1)*total_bin,2])) # update many times
 
                           rmse_array[ibin+(img_order+1)*total_bin,w+3]=rmse_bin
                           rmse_array[ibin+(img_order+1)*total_bin,2]=r_squared_array[ibin+(img_order+1)*total_bin,2]
@@ -549,22 +549,22 @@ def main():
                         brdf_coeff_array[ibin,2+w+2*len(hyObj.wavelengths)] = fIso
     
                     # update array for BRDF output diagnostic files 
-                    mid_ndvi_list = brdf_coeff_array[:total_bin,0]
+                    mid_ndvi_list = brdf_coeff_array[:total_bin,0].astype(np.float)
                     if np.count_nonzero(brdf_coeff_array[:, 2+w]) > 3:
                     # check linearity( NDVI as X v.s. kernel coefficients as Y ), save to diagnostic file, BIN by BIn, and wavelength by wavelength
 
                       # volumetric coefficients 
-                      temp_y = brdf_coeff_array[:total_bin, 2+w]
+                      temp_y = brdf_coeff_array[:total_bin, 2+w].astype(np.float)
                       slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin,  rmse_ndvi_bin = cal_r2_single(mid_ndvi_list[ (mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)], temp_y[(mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)] )
                       brdf_coeff_array[total_bin+1:total_bin+7,2+w] = slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin,  rmse_ndvi_bin
                 
                       # geometric coefficients
-                      temp_y = brdf_coeff_array[:total_bin, 2+w+1*len(hyObj.wavelengths)]
+                      temp_y = brdf_coeff_array[:total_bin, 2+w+1*len(hyObj.wavelengths)].astype(np.float)
                       slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin,  rmse_ndvi_bin = cal_r2_single(mid_ndvi_list[(mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)], temp_y[(mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)])
                       brdf_coeff_array[total_bin+1:total_bin+7,2+w+len(hyObj.wavelengths)] = slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin, rmse_ndvi_bin
 
                       # isotropic coefficients
-                      temp_y = brdf_coeff_array[:total_bin, 2+w+2*len(hyObj.wavelengths)]
+                      temp_y = brdf_coeff_array[:total_bin, 2+w+2*len(hyObj.wavelengths)].astype(np.float)
                       slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin,  rmse_ndvi_bin = cal_r2_single(mid_ndvi_list[(mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)], temp_y[(mid_ndvi_list>BRDF_VEG_lower_bound) & (temp_y != 0)])
                       brdf_coeff_array[total_bin+1:total_bin+7,2+w+2*len(hyObj.wavelengths)] = slope_ndvi_bin, intercept_ndvi_bin, r_value_ndvi_bin, p_value_ndvi_bin, std_err_ndvi_bin, rmse_ndvi_bin               
                 
