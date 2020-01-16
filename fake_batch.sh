@@ -15,7 +15,7 @@ do
     echo "$imgname"
     echo "$obsname"
     
-    #python topo_brdf_coeffs_modify.py  --img $imgname  --obs $obsname  --od $4  --pref $imgbase    --kernels sparse thick  --mask  --mask_threshold 0.3 0.7  --brdf --topo
-    #python image_to_traits_modify.py -img $imgname --obs $obsname -od $4 --mask --mask_threshold 0.3 0.7 --brdf $4/$imgbase --topo $4/"$imgbase"_topo_coeffs.json   -coeffs $5
+    #python topo_brdf_coeffs_modify_hybeta4.py  --img $imgname  --obs $obsname  --od $4  --pref $imgbase    --kernels sparse thick  --mask  --mask_threshold 0.3 0.7  --brdf --topo
+    #python image_to_traits_modify_hybeta4.py -img $imgname --obs $obsname -od $4 --mask --mask_threshold 0.3 0.7 --brdf $4/$imgbase --topo $4/"$imgbase"_topo_coeffs.json   -coeffs $5
     
 done < $3
