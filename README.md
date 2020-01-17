@@ -1,5 +1,5 @@
 
-### 1. Single Image Mode
+# 1. Single Image Mode
 
 #### Coefficients for TOPO and BRDF correction only
 
@@ -55,40 +55,30 @@ python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f130626t01p00r07_rfl_v
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f130626t01p00r07_rfl_v1a_img_subset --obs /hyspiri/f130626t01p00r07_obs_v1a_img_subset -od /hyspiri/out_dir/ --brdf /hyspiri/out_dir/f130626t01p00r07  --topo /hyspiri/out_dir/f130626t01p00r07_subset_topo_coeffs.json  --mask --mask_threshold .3 .7  -coeffs /hyspiri/traits/
 ```
 
-### 2. Batch Mode
+# 2. Batch Mode
 
 Prepare the file list (`fake_list.txt`) and the shell script (`fake_batch.sh`).
 
 <p></p>
 
-**Directory for L2 reflectance image** 
+**Directory for L2 reflectance image** `/hyspiri/`
 
-`/hyspiri/`
+**Directory for L1 obs_ort image** `/hyspiri/`
 
-**Directory for L1 obs_ort image** 
+**Image List** `/hyspiri/fake_list.txt`
 
-`/hyspiri/`
+**Output directory** `/hyspiri/out_dir/`
 
-**Image List**
+**Directory for trait coefficients (json format)** `/hyspiri/traits/`
 
-`/hyspiri/fake_list.txt`
-
-**Output directory**
-
-`/hyspiri/out_dir/`
-
-**Directory for trait coefficients (json format)**
-
-`/hyspiri/traits/`
-
-*fake_list.txt*
+fake_list.txt
 
 ```
 f130626t01p00r07
 f130626t01p00r09
 ```
 
-*shell script for traitss mapping (fake_batch.sh)*
+Shell script for traitss mapping (`fake_batch.sh`)
 
 
 ```shell
@@ -113,13 +103,13 @@ do
 done < $3
 ```
 
-*run the bash*
+Run the bash
 
 ```bash
 bash fake_batch.sh /hyspiri/ /hyspiri/ /hyspiri/fake_list.txt /hyspiri/out_dir/ /hyspiri/traits/
 ```
 
-### 3. Grouping Mode
+# 3. Grouping Mode
 
 In grouping mode, the BRDF coefficients are estimated based on sampled data from more than one images that are acquired in similar time. By contrast, in the single mode, the BRDF coefficients are estimated image by image without sampling.
 
@@ -153,7 +143,7 @@ python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.4 0.7 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group
 ```
 
-### 4. Grouping Mode with multiples NDVI bins and smoothed BRDF coefficients
+# 4. Grouping Mode with multiples NDVI bins and smoothed BRDF coefficients
 
 ##### Different smoothing methods with multiple NDVI bins
 ###### X: NDVI, Y: Volumetric/Geometric/Isotropic Coefficient
@@ -162,7 +152,9 @@ python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_
 ##### BRDF smoothing methods 
 
 **L:** Linear regression
+
 **W:** Weighted linear regression (Weights are determined by sample sizes of each bin)
+
 **I:** Linear interpolation
 
 #### No smoothing, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
@@ -201,31 +193,21 @@ python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I
 ```
 
-### 5. Batch Mode for both grouping and smoothing
+# 5. Batch Mode for both grouping and smoothing
 
 Prepare the file list (`fake_list.txt`) and the shell script (`fake_batch_group_smooth.sh`).
 
 <p></p>
 
-**Directory for L2 reflectance image** 
+**Directory for L2 reflectance image**  `/hyspiri_image_dir/` 
 
-`/hyspiri_image_dir/` 
+**Directory for L1 obs_ort image** `/hyspiri_obs_dir/`
 
-**Directory for L1 obs_ort image** 
+**Image List** `/hyspiri_file_list_dir/fake_list.txt`
 
-`/hyspiri_obs_dir/`
+**Output directory** `/hyspiri_out_dir/`
 
-**Image List**
-
-`/hyspiri_file_list_dir/fake_list.txt`
-
-**Output directory**
-
-`/hyspiri_out_dir/`
-
-**Directory for trait coefficients (json format)**
-
-`/hyspiri_out_traits_dir/`
+**Directory for trait coefficients (json format)** `/hyspiri_out_traits_dir/`
 
 ** fake_list.txt (Put all file base names of the same group in the same list) **
 ```
@@ -233,7 +215,7 @@ f130626t01p00r07
 f130626t01p00r09
 ```
 
-**shell script for traitss mapping (`fake_batch_group_smooth.sh`)**
+Shell script for traitss mapping (`fake_batch_group_smooth.sh`)
 
 ```shell
 #echo $1 # rfl image dir
@@ -289,8 +271,8 @@ done < $3
 #bash fake_batch_group_smooth.sh /hyspiri_image_dir/ /hyspiri_obs_dir/ /hyspiri_file_list_dir/fake_list.txt /hyspiri/coeff_out_dir/ /hyspiri/out_traits_dir/ hyspiri_group_f130626_18bins
 ```
 
-##### run the bash
-  Group tag ** *"hyspiri_group_f130626_18bins"* ** varies according to actual group name
+**Run the bash**
+  Group tag ***"hyspiri_group_f130626_18bins"*** varies according to actual group name
 
 ```bash
 bash fake_batch_group_smooth.sh /hyspiri_image_dir/ /hyspiri_obs_dir/ /hyspiri_file_list_dir/fake_list.txt /hyspiri_coeff_out_dir/ /hyspiri_out_traits_dir/ hyspiri_group_f130626_18bins
