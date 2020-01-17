@@ -143,13 +143,13 @@ python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.4 0.7 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group
 ```
 
-# 4. Grouping Mode with multiples NDVI bins and smoothed BRDF coefficients
+# 4. Grouping Mode with multiple NDVI bins and smoothed BRDF coefficients
 
 ##### Different smoothing methods with multiple NDVI bins
 ###### X: NDVI, Y: Volumetric/Geometric/Isotropic Coefficient
 !["Different smoothing methods with multiple NDVI bins"](above_bin_3interp_example.png)
 
-##### BRDF smoothing methods 
+#### Three BRDF smoothing methods (L/W/I)
 
 **L:** Linear regression
 
@@ -215,7 +215,7 @@ f130626t01p00r07
 f130626t01p00r09
 ```
 
-Shell script for traitss mapping (`fake_batch_group_smooth.sh`)
+Shell script for traits mapping (`fake_batch_group_smooth.sh`)
 
 ```shell
 #echo $1 # rfl image dir
@@ -272,6 +272,7 @@ done < $3
 ```
 
 **Run the bash**
+
   Group tag ***"hyspiri_group_f130626_18bins"*** varies according to actual group name
 
 ```bash
