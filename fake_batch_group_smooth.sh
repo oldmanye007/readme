@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #echo $1 # rfl image dir
 #echo $2 # obs file dir
