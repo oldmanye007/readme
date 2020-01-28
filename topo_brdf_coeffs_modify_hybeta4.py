@@ -242,6 +242,7 @@ def main():
 
                 if hyObj.bad_bands[iterator.current_band+1]: # load data to RAM, if it is a goog band
                   band = iterator.read_next() 
+                  band = band / smoothing_factor[iterator.current_band]
                   band_msk = (band> REFL_MIN_THRESHOLD) & (band<REFL_MAX_THRESHOLD)
                   
                 else: #  similar to .read_next(), but do not load data to RAM, if it is a bad band
