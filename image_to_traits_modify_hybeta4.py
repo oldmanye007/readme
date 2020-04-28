@@ -83,6 +83,7 @@ def check_wave_match(hyObj, dst_wave_list):
     
         if single_wave in wavelengths:
             wave_band = np.argwhere(single_wave == wavelengths)[0][0]
+            match_index_list = match_index_list + [wave_band]
         elif (single_wave  > wavelengths.max()) | (single_wave  < wavelengths.min()):
             return {'flag':False}
         else: 
@@ -619,4 +620,3 @@ def main():
 
 if __name__== "__main__":
     main()
-
