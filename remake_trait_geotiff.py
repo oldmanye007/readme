@@ -90,7 +90,7 @@ def save_img(outpath, data_array_bsq, out_geotransform, dest_wkt, data_type=gdal
     n_band, n_row, n_col = data_array_bsq.shape
     
     dest1 = out_drv.Create(outpath, n_col, \
-            n_row, n_band, data_type, options=["INTERLEAVE=BAND"])
+            n_row, n_band, data_type, options=["INTERLEAVE=BAND","TILED=YES","COMPRESS=LZW"])
 
     new_geo = out_geotransform
     

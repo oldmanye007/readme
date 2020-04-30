@@ -586,11 +586,13 @@ def main():
         
                 # Create geotiff driver
                 driver = gdal.GetDriverByName("GTIFF")
-                tiff = driver.Create(dstFile,hyObj.columns,hyObj.lines,2,gdal.GDT_Float32)
+                tiff = driver.Create(dstFile,hyObj.columns,hyObj.lines,2,gdal.GDT_Float32, options=["INTERLEAVE=BAND", "TILED=YES","COMPRESS=LZW"])
                 tiff.SetGeoTransform(hyObj.transform)
                 tiff.SetProjection(hyObj.projection)
-                tiff.GetRasterBand(1).SetNoDataValue(0)
-                tiff.GetRasterBand(2).SetNoDataValue(0)
+                tiff.GetRasterBand(1).SetNoDataValue(args.nodata)
+                tiff.GetRasterBand(2).SetNoDataValue(args.nodata)
+                tiff.GetRasterBand(1).SetDescription("Model Mean")
+                tiff.GetRasterBand(2).SetDescription("Model Standard Deviation")
                 del tiff,driver
             
             coefficients,intercept,vnorm,vnorm_scaler,vnorm_band_mask,model_band_mask,transform = trait_dict[i]
