@@ -586,7 +586,7 @@ def main():
         
                 # Create geotiff driver
                 driver = gdal.GetDriverByName("GTIFF")
-                tiff = driver.Create(dstFile,hyObj.columns,hyObj.lines,2,gdal.GDT_Float32, options=["INTERLEAVE=BAND", "TILED=YES","COMPRESS=LZW"])
+                tiff = driver.Create(dstFile,hyObj.columns,hyObj.lines,2,gdal.GDT_Float32, options=["INTERLEAVE=BAND"])  # , "TILED=YES" ,"COMPRESS=LZW"
                 tiff.SetGeoTransform(hyObj.transform)
                 tiff.SetProjection(hyObj.projection)
                 tiff.GetRasterBand(1).SetNoDataValue(args.nodata)
