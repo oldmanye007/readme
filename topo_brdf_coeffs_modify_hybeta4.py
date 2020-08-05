@@ -23,6 +23,9 @@ NO_DATA_VALUE = -9999  #-0.9999  # -9999
 # The value that replace NaN in diagnostic tables
 DIAGNO_NAN_OUTPUT = -9999 
 
+# The C value for image with relatively flat terrain, it will make the TOPO correction factor to be close to 1
+FLAT_COEFF_C = -9999
+
 # Data range considered from image data in BRDF coefficient estimation
 REFL_MIN_THRESHOLD = 0.001 # 10
 REFL_MAX_THRESHOLD = 0.9  # 9000
@@ -44,6 +47,9 @@ SAMPLE_SLOPE_MIN_THRESHOLD = 0.03
 
 # BRDF coefficients in an NDVI bin with sample size less than this threshold will not be estimated in BRDF correction. Its coefficients might be estimated by its neighboring NDVI bins in later steps.
 MIN_SAMPLE_COUNT = 100
+
+# if there are too few pixels with terrain (above certian threshold), no TOPO correction factor will be close to 1
+MIN_SAMPLE_COUNT_TOPO = 100
 
 # Thresholds for BRDF correction. Pixels beyond this range will not be used for BRDF coefficients estimation.
 SENSOR_ZENITH_MIN_DEG = 2
@@ -496,8 +502,11 @@ def main():
                         sample_slope_sub = sample_slope[sample_index[i]:sample_index[i+1]]
                         sample_c1_sub = sample_c1[sample_index[i]:sample_index[i+1]]
 
-                        
-                        topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
+                        if np.count_nonzero((sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD))>MIN_SAMPLE_COUNT_TOPO:
+                          topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
+                        else:
+                          topo_coeff=FLAT_COEFF_C                       
+                          
                         topo_coeff_list[i]['c'].append(topo_coeff)
 
                         correctionFactor = (sample_c1_sub + topo_coeff)/(sample_cos_i_sub + topo_coeff)

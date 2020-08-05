@@ -144,10 +144,13 @@ def main():
     parser.add_argument("-coeffs", help="Trait coefficients directory", required=False, type = str)
     parser.add_argument("-nodata", help="New value to assign for no_data values", required=False, type = float, default =-9999)
     parser.add_argument("-smooth", help="BRDF smooth methods L: Linear regression; W: Weighted linear regression; I: Linear interpolation", required=False  , choices=['L', 'W', 'I'])
+    parser.add_argument("-sszn", help="standard solar zenith angle (degree)", required=False, type = float, default =40)
 
     args = parser.parse_args()
 
     traits = glob.glob("%s/*.json" % args.coeffs)
+    
+    std_solar_zn = float(args.sszn)/180*np.pi
     
     #Load data objects memory
     if args.img.endswith(".h5"):
@@ -339,10 +342,13 @@ def main():
         
         k_vol = generate_volume_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,hyObj.sensor_zn, ross = brdf_coeffs_List[first_effective_ibin]['ross'])
         k_geom = generate_geom_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,hyObj.sensor_zn,li = brdf_coeffs_List[first_effective_ibin]['li'])
-        k_vol_nadir = generate_volume_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,0, ross = brdf_coeffs_List[first_effective_ibin]['ross'])
-        k_geom_nadir = generate_geom_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,0,li = brdf_coeffs_List[first_effective_ibin]['li'])
         
-
+        if args.sszn is None:
+          k_vol_nadir = generate_volume_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,0, ross = brdf_coeffs_List[first_effective_ibin]['ross'])
+          k_geom_nadir = generate_geom_kernel(hyObj.solar_az,hyObj.solar_zn,hyObj.sensor_az,0,li = brdf_coeffs_List[first_effective_ibin]['li']) 
+        else:       
+          k_vol_nadir = generate_volume_kernel(np.pi,std_solar_zn,hyObj.sensor_az,0, ross = brdf_coeffs_List[first_effective_ibin]['ross'])
+          k_geom_nadir = generate_geom_kernel(np.pi,std_solar_zn,hyObj.sensor_az,0,li = brdf_coeffs_List[first_effective_ibin]['li'])
 
     if len(traits)!=0:
       

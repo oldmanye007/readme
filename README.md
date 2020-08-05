@@ -55,6 +55,15 @@ python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f130626t01p00r07_rfl_v
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f130626t01p00r07_rfl_v1a_img_subset --obs /hyspiri/f130626t01p00r07_obs_v1a_img_subset -od /hyspiri/out_dir/ --brdf /hyspiri/out_dir/f130626t01p00r07  --topo /hyspiri/out_dir/f130626t01p00r07_subset_topo_coeffs.json  --mask --mask_threshold .3 .7  -coeffs /hyspiri/traits/
 ```
 
+#### Normalized to standard solar zenith angle with TOPO and BRDF result (ENVI format plus GeoTIFF format - 8 bands)
+
+```bash
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f130626t01p00r07_rfl_v1a_img_subset  --obs /hyspiri/f130626t01p00r07_obs_v1a_img_subset  --od /hyspiri/out_dir/  --pref f130626t01p00r07  --kernels sparse thick  --mask  --mask_threshold 0.3 0.7  --brdf  --topo
+
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f130626t01p00r07_rfl_v1a_img_subset --obs /hyspiri/f130626t01p00r07_obs_v1a_img_subset -od /hyspiri/out_dir/ --topo /hyspiri/out_dir/f130626t01p00r07_subset_topo_coeffs.json --brdf /hyspiri/out_dir/f130626t01p00r07_subset --mask --mask_threshold .3 .7  --out _topo_brdf --rgbim  -sszn 25.79
+```
+
+
 # 2. Batch Mode
 
 Prepare the file list (`fake_list.txt`) and the shell script (`fake_batch.sh`).
@@ -191,6 +200,15 @@ python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v
 
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I
 python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I
+```
+
+#### Normalized to standard solar zenith angle, Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+
+```bash
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I  -sszn 24.76
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I  -sszn 24.76
 ```
 
 # 5. Batch Mode for both grouping and smoothing
