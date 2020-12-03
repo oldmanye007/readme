@@ -166,50 +166,83 @@ python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_
 
 **I:** Linear interpolation
 
-#### No smoothing, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+#### No smoothing, Image-by-image TOPO correction, grouping BRDF correction, 18 static NDVI bins
 
 ```bash
-python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
 
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group
 ```
 
-#### Smoothing with linear regression, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+#### Smoothing with linear regression, Image-by-image TOPO correction, grouping BRDF correction, 18 static NDVI bins
 
 ```bash
-python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
 
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth L
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth L
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth L
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth L
 ```
 
-#### Smoothing with weighted linear regression, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+#### Smoothing with weighted linear regression, Image-by-image TOPO correction, grouping BRDF correction, 18 static NDVI bins
 
 ```bash
-python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
 
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth W
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth W
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth W
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth W
 ```
 
-#### Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+#### Smoothing with weighted linear regression, Image-by-image TOPO correction, grouping BRDF correction, 18 dynamic NDVI bins
+
+Once the number for "--dynamicbin" is set, "--mask_threshold" will be suppressed.
 
 ```bash
-python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+python topo_brdf_coeffs_modify_hybeta6.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf --dynamicbin 18 --mask  --kernels sparse thick  --samp_perc 0.1 --topo_sep
 
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I
+python image_to_traits_modify_hybeta6.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask  --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth W 
+python image_to_traits_modify_hybeta6.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask  --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth W
 ```
 
-#### Normalized to standard solar zenith angle, Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correction, 18 NDVI bins
+#### Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correction, 18 static NDVI bins
 
 ```bash
-python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_3bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
 
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I  -sszn 24.76
-python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_3bins  --out _topo_brdf_group -smooth I  -sszn 24.76
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I
 ```
+
+#### Normalized to standard solar zenith angle, Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correction, 18 static NDVI bins
+
+```bash
+python topo_brdf_coeffs_modify_hybeta4.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf  --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --kernels sparse thick  --samp_perc 0.1 --topo_sep
+
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I  -sszn 24.76
+python image_to_traits_modify_hybeta4.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask --mask_threshold 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I  -sszn 24.76
+```
+#### Normalized to averaged solar zenith angle of the whole flight box, Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correctionn, 18 dynamic NDVI bins
+
+Once the number for "--dynamicbin" is set, "--mask_threshold" will be suppressed. Averaged solar zenith angle of the whole flight box is estimated from the center solar zenith angle of each flight line.
+
+```bash
+python topo_brdf_coeffs_modify_hybeta6.py  --img /hyspiri/f140603t01p00r10_rfl_v1b_img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img /hyspiri/f140603t01p00r12_obs_v1b_img  --od /hyspiri/out_dir/  --pref f14_group_18bins   --topo --brdf --dynamicbin 18 --mask  --kernels sparse thick  --samp_perc 0.1 --topo_sep
+
+python image_to_traits_modify_hybeta6.py -img /hyspiri/f140603t01p00r10_rfl_v1b_img  --obs /hyspiri/f140603t01p00r10_obs_v1b_img -od /hyspiri/out_dir/   --mask  --topo /hyspiri/out_dir/f140603t01p00r10_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I -boxsszn
+python image_to_traits_modify_hybeta6.py -img /hyspiri/f140603t01p00r12_rfl_v1b_img  --obs /hyspiri/f140603t01p00r12_obs_v1b_img -od /hyspiri/out_dir/   --mask  --topo /hyspiri/out_dir/f140603t01p00r12_topo_coeffs.json  --brdf /hyspiri/out_dir/f14_group_18bins  --out _topo_brdf_group -smooth I -boxsszn
+```
+
+#### Normalized to averaged solar zenith angle of the whole flight box, Smoothing with linear interpolation, Image-by-image TOPO correction, grouping BRDF correctionn, 18 dynamic NDVI bins, buffering from the edge (for NEON)
+
+As a result, the RGBIM and the Trait maps have buffered mask as the last layer.
+
+```bash
+python topo_brdf_coeffs_modify_hybeta6.py  --img /d05/NEON_D05_CHEQ_DP1_20170911_181003_reflectance.h5 /d05/NEON_D05_CHEQ_DP1_20170911_181559_reflectance.h5    --od /d05/out_dir/  --pref d05_group_18bins   --topo --brdf --dynamicbin 18 --mask  --kernels sparse thick  --samp_perc 0.1 --topo_sep --buffer_neon
+
+python image_to_traits_modify_hybeta6.py -img /d05/NEON_D05_CHEQ_DP1_20170911_181003_reflectance.h5   -od /d05/out_dir/   --mask  --topo /d05/out_dir/NEON_D05_CHEQ_DP1_20170911_181003_topo_coeffs.json  --brdf /d05/out_dir/d05_group_18bins  --out _topo_brdf_group -smooth I -boxsszn --buffer_neon
+python image_to_traits_modify_hybeta6.py -img /d05/NEON_D05_CHEQ_DP1_20170911_181559_reflectance.h5   -od /d05/out_dir/   --mask  --topo /d05/out_dir/NEON_D05_CHEQ_DP1_20170911_181559_topo_coeffs.json  --brdf /d05/out_dir/d05_group_18bins  --out _topo_brdf_group -smooth I -boxsszn --buffer_neon
+```
+
 
 # 5. Batch Mode for both grouping and smoothing
 
