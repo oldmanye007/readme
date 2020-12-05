@@ -11,7 +11,6 @@ import osr
 
 
 #sys.path.append('./HyTools-sandbox')   # need to modify the path
-sys.path.append('G:/ye_backup/test_of_H/test 2019-07-27 16;27;38 (Full)/hytool2019v2/HyTools-sandbox/')
 
 import hytools as ht
 from hytools.brdf import *
@@ -43,7 +42,7 @@ NDVI_MIN_THRESHOLD = 0.01
 NDVI_MAX_THRESHOLD = 1.0
 
 # NDVI range for data considered in bins in BRDF coefficient estimation. Pixels outside BIN range will not be corrected for BRDF effect 
-NDVI_BIN_MIN_THRESHOLD = 0.05 #0.005
+NDVI_BIN_MIN_THRESHOLD = 0.05 
 NDVI_BIN_MAX_THRESHOLD = 1.0
 
 # Thresholds for Topographic correction. Pixels beyond those ranges will not be corrected for topographic effect. 
