@@ -26,7 +26,7 @@ warnings.filterwarnings("ignore")
 ###########################################
 
 # No data value of input images
-NO_DATA_VALUE = 0  #-0.9999  # -9999 
+#NO_DATA_VALUE = -9999  #-0.9999  # -9999 
 
 # The value that replace NaN in diagnostic tables
 DIAGNO_NAN_OUTPUT = -9999 
@@ -159,15 +159,10 @@ def get_center_info(hyObj, coord_center_method):
     geotransform = hyObj.transform
     dim1 = hyObj.lines
     dim2 = hyObj.columns
-    #print(dim1,dim2,geotransform)
 
     if coord_center_method==1:
         x_center = dim2//2
         y_center = dim1//2
-        #center_x = geotransform[1]*(dim2//2)  + geotransform[2]*(dim1//2) + geotransform[0]
-        #center_y = geotransform[4]*(dim2//2)  + geotransform[5]*(dim1//2) + geotransform[3]
-        #solar_zn_center = (hyObj.solar_zn)[dim1//2,dim2//2]
-        print(dim2//2,dim1//2)
         
     elif coord_center_method==2:
         x_grid = np.arange(0, dim2)
@@ -180,9 +175,7 @@ def get_center_info(hyObj, coord_center_method):
         
     center_x = geotransform[1]*(x_center)  + geotransform[2]*(y_center) + geotransform[0]
     center_y = geotransform[4]*(x_center)  + geotransform[5]*(y_center) + geotransform[3]
-    print(x_center,y_center)
-        
-        
+      
     lon_center, lat_center = geoxy_2_latlon(center_x,center_y, hyObj.projection)
     return  (lon_center, lat_center,solar_zn_center,solar_zn_center*180/np.pi)     
  
@@ -243,8 +236,7 @@ def kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,
     group_dict["img_name_list"]= img_name_list
     #print(band_subset_outlier)
     group_dict["band_subset"]= band_subset_outlier
-    #return group_dict
-    #print(sample_cos_i.max(),sample_cos_i.min(),sample_slope.max(),sample_slope.min()  )
+
     for i in range(len(hyObj_pointer_dict_list)):  
       print(hyObj_pointer_dict_list[i].file_name)
       if hyObj_pointer_dict_list[i].file_type == "ENVI":
@@ -270,25 +262,22 @@ def kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,
       sample_c1_sub = sample_c1[sub_index_img_tag]
       
       topo_mask_sub = (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD)
-      #print(np.count_nonzero(topo_mask_sub),sample_cos_i_sub.max(),sample_cos_i_sub.min(),sample_slope_sub.max(),sample_slope_sub.min())  
+
       for iband in range(len(band_subset_outlier)):
-            #print(iband)
             wave_samples_band  = wave_samples[:,iband]
-            #print(wave_samples_band.max(),wave_samples_band.min())
-            #topo_coeff  = generate_topo_coeff_band(wave_samples_band,(wave_samples_band> REFL_MIN_THRESHOLD) & (wave_samples_band<REFL_MAX_THRESHOLD ) & topo_mask_sub ,sample_cos_i_sub)
+
             topo_coeff,_,_  = generate_topo_coeff_band(wave_samples_band,(wave_samples_band> REFL_MIN_THRESHOLD) & (wave_samples_band<REFL_MAX_THRESHOLD ) & topo_mask_sub ,sample_cos_i_sub, non_negative=True)
             correctionFactor = (sample_c1_sub + topo_coeff)/(sample_cos_i_sub + topo_coeff)
             correctionFactor = correctionFactor*topo_mask_sub + 1.0*(1-topo_mask_sub)
             wave_samples[:,iband] = wave_samples_band* correctionFactor
 
       wave_all_samples = np.hstack((wave_all_samples, wave_samples.T))
-
-        
+   
         
     ndvi_mask = (sample_ndvi>0.15) & (sample_ndvi <=0.95)
     obs_mask = np.isfinite(sample_k_vol) & np.isfinite(sample_k_geom)
     temp_mask = (wave_all_samples[0]> REFL_MIN_THRESHOLD) & (wave_all_samples[0]< REFL_MAX_THRESHOLD) & (obs_mask) & (ndvi_mask)
-    print(sample_k_geom.shape, sample_k_vol.shape, wave_samples.shape)
+
     for iband in range(len(band_subset_outlier)):
       new_df = pd.DataFrame({'k_geom':sample_k_geom[temp_mask],'k_vol':sample_k_vol[temp_mask],'reflectance':wave_all_samples[iband,temp_mask],'line_id':sample_img_tag[temp_mask], "NDVI":sample_ndvi[temp_mask]})
 
@@ -307,20 +296,14 @@ def kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,
       new_df_bin_group_mean = new_df.groupby(['vol_cut_bins', 'geom_cut_bins', 'ndvi_cut_bins', 'line_id']).median() #mean()
                            
       new_df_bin_group_mean.reset_index(inplace=True)                      
-      #ax =sns.catplot(x='line_id', y='reflectance', kind="box", hue="line_id", showfliers=False, data=new_df_bin_group_mean)
-      #ax = sns.catplot(x='LAT', y='Solar Hour Angle (degrees)', kind="violin", data=new_df)
-      #ax.set_xticklabels(['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90'])
 
       n_bin = new_df_bin_group_mean.shape[0]//len(hyObj_pointer_dict_list)
-      print(n_bin, new_df_bin_group_mean.shape)
-      #sys.exit(1)
+
       ss = new_df_bin_group_mean["reflectance"].values
-      #print(ss[:8])
 
       bin_avg_array = np.reshape(ss,(n_bin,len(hyObj_pointer_dict_list)))
 
       bin_mean = np.nanmedian(bin_avg_array,axis=1)
-      #bin_mean = np.mean(bin_avg_array,axis=1)
       inds = np.where(np.isnan(bin_avg_array))
 
       #Place column means in the indices. Align the arrays using take
@@ -333,25 +316,10 @@ def kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,
       #Y = pdist(bin_avg_array.T, 'seuclidean', V=None)
       Y = pdist(bin_avg_array.T, 'euclidean', V=None)
       #Y = pdist(bin_avg_array.T, 'canberra')
-      #hierarchy.single(Y)
+
       print(Y)
-      print(squareform(Y))
-      '''
-      ax =sns.catplot(x='line_id', y='reflectance', kind="box", hue="line_id", showfliers=False, data=new_df_bin_group_mean)
-      ax.set_axis_labels("Geometric Kernel", "Reflectance")
-      plt.show()
-      '''
-      #plt.plot(bin_avg_array, '.')
-      #plt.show()
 
       Z = hierarchy.linkage(Y, 'complete') #'single'
-      #plt.figure()
-      #dn = hierarchy.dendrogram(Z,labels=img_name_list,  orientation='right') #leaf_font_size=6
-      #plt.subplots_adjust(left=0.35, bottom=0.1, right=0.9, top=0.9, wspace=0, hspace=0)
-      #plt.title(str(sub_wavelist[iband])+'nm')
-      #plt.show()
-
-      #print(Z)
       
       return_dict = {}
 
@@ -378,7 +346,7 @@ def kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,
       major_label_id = np.bincount(np.array(T_)).argmax()
       
       outlier_img_tag = (np.array(T_)!=major_label_id)
-      #print('outlier_img_tag',outlier_img_tag.astype(int).tolist())
+
       return_dict["outlier_image_bool"]= outlier_img_tag.astype(int).tolist()
       return_dict["outlier_count"]=int(np.count_nonzero(outlier_img_tag))
       group_dict['b'+str(iband+1)]=  return_dict  
@@ -441,9 +409,6 @@ def main():
         hyObj.no_data = NO_DATA_VALUE
         
         hyObj.load_data()
-
-        #print(hyObj.solar_zn.shape)
-        #sys.exit(1)
         
         # Generate mask
         if args.mask:
@@ -459,12 +424,8 @@ def main():
               buffer_edge=sig.convolve2d(ir <= 0.5*hyObj.no_data,make_disc_for_buffer(30), mode = 'same', fillvalue=1)              
               ag_mask = ag_mask or (buffer_edge>0)
               
-              #boundary_buffer.tofile("c:/tmp/anf_test/boundary_buffer_neon.bin")
-              #buffer01.tofile("c:/tmp/anf_test/buffer01.bin")
-              
             hyObj.mask = (ndvi > NDVI_MIN_THRESHOLD) & (ndvi < NDVI_MAX_THRESHOLD) & (ir != hyObj.no_data) & (ag_mask ==0)
-            #hyObj.mask.tofile("c:/tmp/anf_test/buffer01.bin")
-            #sys.exit(1)
+
             del ir,red #,ndvi
         else:
             hyObj.mask = np.ones((hyObj.lines,hyObj.columns)).astype(bool)
@@ -499,16 +460,13 @@ def main():
             else:
                 if args.mask_threshold:
                   ndvi_thres = [NDVI_BIN_MIN_THRESHOLD]+ args.mask_threshold +[NDVI_BIN_MAX_THRESHOLD]
-                  #total_bin = len(args.mask_threshold)+1
                 else:
                   ndvi_thres = [NDVI_BIN_MIN_THRESHOLD , NDVI_BIN_MAX_THRESHOLD]
-                  #total_bin = 1  
                   
             ndvi_thres = sorted(list(set(ndvi_thres)))
             total_bin = len(ndvi_thres)-1
             brdfmask = np.ones(( total_bin, hyObj.lines, hyObj.columns )).astype(bool)
-            print(ndvi_thres)
-            sys.exit(1)
+
             for ibin in range(total_bin):
               brdfmask[ibin,:,:] = hyObj.mask & (ndvi > ndvi_thres[ibin]) & (ndvi <= ndvi_thres[ibin+1]) &  (hyObj.sensor_zn > np.radians(SENSOR_ZENITH_MIN_DEG))
 
@@ -543,12 +501,10 @@ def main():
               coord_center_method=1
               
             img_center_info  = get_center_info(hyObj, coord_center_method)  
-            #print(hyObj.projection, hyObj.transform)
             print(img_center_info)
             #csv_img_center_info = np.array([os.path.basename(args.img[0]).split('_')[0]]+list(img_center_info))[:,np.newaxis]
             csv_img_center_info = np.array([os.path.basename(args.img[0])]+[args.pref]*2+list(img_center_info))[:,np.newaxis]
             np.savetxt("%s%s_lat_sza.csv" % (args.od,args.pref), csv_img_center_info.T, header = "image_name,uniq_name, uniq_name_short, LON,LAT,solar_zn_rad,solar_zn_deg", delimiter=',' ,fmt='%s',comments='')
-            #sys.exit(1)
     
         # Cycle through the bands and calculate the topographic and BRDF correction coefficients
         print("Calculating image correction coefficients.....")
@@ -616,12 +572,15 @@ def main():
     # Compute topographic and BRDF coefficients using data from multiple scenes
     elif len(args.img) > 1:
     
-        #print(args.img)
         image_uniq_name_list, image_uniq_name_list_short = get_uniq_img_name(args.img)
-        #print(image_uniq_name_list)
-        #print(image_uniq_name_list_short)
-        #sys.exit(1)
-        
+
+        if args.check_flight:
+          args.brdf = True
+          args.topo = True
+          args.topo_sep = True
+          print("Automatically enable TOPO and BRDF mode if 'check_flight' is enabled. ")
+
+          
         if args.brdf:
         
             li,ross =  args.kernels
@@ -632,7 +591,7 @@ def main():
                 perc_range = DYN_NDVI_BIN_HIGH_PERC-DYN_NDVI_BIN_LOW_PERC+1                
                 #ndvi_break_dyn_bin= np.percentile(ndvi[ndvi>0], np.arange(DYN_NDVI_BIN_LOW_PERC,DYN_NDVI_BIN_HIGH_PERC+1,perc_range//(total_bin-2)))
                 ndvi_thres =  [NDVI_BIN_MIN_THRESHOLD] + [None]*(total_bin-1) +[NDVI_BIN_MAX_THRESHOLD] 
-                print(ndvi_thres)
+                print("NDVI bins:",ndvi_thres)
             else:
                 ndvi_thres_complete = True
                 if args.mask_threshold:
@@ -641,9 +600,6 @@ def main():
                 else:
                   ndvi_thres = [NDVI_BIN_MIN_THRESHOLD, NDVI_BIN_MAX_THRESHOLD]
                   total_bin = 1  
-                  
-            #ndvi_thres = list(set(ndvi_thres))
-            #total_bin = len(ndvi_thres)-1
             
             brdf_coeffs_List = [] #initialize
             brdf_mask_stat = np.zeros(total_bin)
@@ -711,9 +667,7 @@ def main():
             
             if args.brdf:
                 img_center_info  = get_center_info(hyObj, coord_center_method)  
-                #print(hyObj.projection, hyObj.transform)
                 print(img_center_info)
-                #csv_img_center_info = np.array([os.path.basename(args.img[0]).split('_')[0]]+list(img_center_info))[:,np.newaxis]
                 csv_img_center_info = np.array([os.path.basename(args.img[i])]+[image_uniq_name_list[i]]+[image_uniq_name_list_short[i]]+list(img_center_info))[:,np.newaxis]
                 csv_group_center_info = np.hstack((csv_group_center_info,csv_img_center_info))
             #continue    
@@ -769,7 +723,7 @@ def main():
                 sample_c1 += (np.cos(hyObj.solar_zn) * np.cos( hyObj.slope))[sampleArray].tolist()
             
             # Gernerate scattering kernel samples for brdf correction
-            if args.brdf:
+            if args.brdf or args.check_flight:
             
                 sample_ndvi += (ndvi)[sampleArray].tolist()
                 sample_img_tag += [i+1]*idxRand.shape[1] # start from 1
@@ -790,8 +744,6 @@ def main():
                 for wave_i in RGBIM_BAND_CHECK_OUTLIERS:
                   band_num = int(hyObj.wave_to_band(wave_i))
                   band_subset_outlier = band_subset_outlier + [band_num] # zero based    
- 
-        #sys.exit(1)      
 
         
         sample_k_vol = np.array(sample_k_vol)
@@ -804,15 +756,12 @@ def main():
         
         sample_topo_msk = (sample_cos_i>COSINE_I_MIN_THRESHOLD) & (sample_slope>SLOPE_MIN_THRESHOLD)
 
-        if args.brdf:            
-            #print(['group']*3+np.mean(csv_group_center_info[3:,:].astype(np.float),axis=1).tolist())
+        if args.brdf or args.check_flight:            
             group_summary_info  = [args.pref]*3+np.mean(csv_group_center_info[3:,:].astype(np.float),axis=1).tolist()
-            #print(csv_group_center_info[:,0])
             csv_group_center_info = np.insert(csv_group_center_info.T, 0, group_summary_info, axis=0)        
             np.savetxt("%s%s_lat_sza.csv" % (args.od,args.pref), csv_group_center_info, header = "image_name,uniq_name, uniq_name_short, LON,LAT,solar_zn_rad,solar_zn_deg", delimiter=',' ,fmt='%s',comments='')        
 
             if not ndvi_thres_complete:
-                #print(np.arange(DYN_NDVI_BIN_LOW_PERC,DYN_NDVI_BIN_HIGH_PERC+1,perc_range//(total_bin-2)))
                 ndvi_break_dyn_bin= np.percentile(sample_ndvi[sample_ndvi>0], np.arange(DYN_NDVI_BIN_LOW_PERC,DYN_NDVI_BIN_HIGH_PERC+1,perc_range//(total_bin-2)))
 
                 ndvi_thres =  sorted([NDVI_BIN_MIN_THRESHOLD] + ndvi_break_dyn_bin.tolist() +[NDVI_BIN_MAX_THRESHOLD])
@@ -869,26 +818,27 @@ def main():
         # find outliers
             print("Searching for fight line outliers.....")
                  
-            #print(len(band_subset_outlier), sample_k_vol.shape)
             outlier_dict = kernel_ndvi_outlier_search(band_subset_outlier, sample_k_vol, sample_k_geom,sample_c1, sample_cos_i, sample_slope, sample_ndvi, sample_topo_msk,sample_img_tag,idxRand_dict, hyObj_pointer_dict_list, image_smooth)
+            outlier_json = "%s%s_outliers.json" % (args.od,args.pref)
+            with open(outlier_json, 'w') as outfile:
+                    json.dump(outlier_dict,outfile) 
+
             if outlier_dict["b1"]["outlier_count"]>0:
               outlier_image_bool = np.array(outlier_dict["b1"]["outlier_image_bool"]).astype(bool)
               img_tag_used = ~outlier_image_bool[np.arange(len(args.img))[sample_img_tag-1]]
               print(np.unique(sample_img_tag[img_tag_used]))
               
-
-            #  print('outlier_image_bool',outlier_image_bool)
-            # if outlier exists, remove random samples from that line, update  sample_k_vol, sample_k_geom
-            
-            outlier_json = "%s%s_outliers.json" % (args.od,args.pref)
-            with open(outlier_json, 'w') as outfile:
-                    json.dump(outlier_dict,outfile)                
-            print("finished fight line outliers checking")    
+              if outlier_dict["b1"]["outlier_count"] > len(args.img)/2:
+                print("More than half of the lines are abnormal lines, please check the information in {}{}_outliers.json. ".format (args.od,args.pref))
+                print("Flight line outliers checking Finishes.")
+                return # exit the script, halt the procedure of coefficients estimation.
+              
+            print("Flight line outliers checking finishes.")    
          
             
         else:
             print("Use all fight lines.....")
-
+            img_tag_used = (sample_img_tag > -1) # All True 
                 #        wave9_samples = np.empty((9,0),float)
                 #if 
                 #  singleband_kernel_ndvi_outlier_search(wave_samples, args.od,args.pref)        
@@ -944,7 +894,6 @@ def main():
                         sample_topo_msk_sub = sample_topo_msk[sample_index[i]:sample_index[i+1]]
 
                         if np.count_nonzero(sample_topo_msk_sub)>MIN_SAMPLE_COUNT_TOPO:
-                          #topo_coeff  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & (sample_cos_i_sub> COSINE_I_MIN_THRESHOLD) &  (sample_slope_sub> SLOPE_MIN_THRESHOLD) ,sample_cos_i_sub)
                           topo_coeff, coeff_slope, coeff_intercept  = generate_topo_coeff_band(wave_samples_sub,(wave_samples_sub> REFL_MIN_THRESHOLD) & (wave_samples_sub< REFL_MAX_THRESHOLD) & sample_topo_msk_sub ,sample_cos_i_sub,non_negative=True)
                         else:
                           topo_coeff=FLAT_COEFF_C                       
@@ -961,23 +910,11 @@ def main():
                 
                 # Gernerate scattering kernel images for brdf correction
                 if args.brdf:
-                
-                    if args.check_flight:
-                      if outlier_dict["b1"]["outlier_count"]>0:
-                        #outlier_image_bool = np.array(outlier_dict["b1"]["outlier_image_bool"]).astype(bool)
-                        #img_tag_used = sample_img_tag==i_img_tag+1
-                        #img_tag_used = ~outlier_image_bool[np.arange(len(args.img))[sample_img_tag-1]]
-                        #print(np.unique(sample_img_tag[img_tag_used]))
-                        wave_samples = wave_samples[img_tag_used]
-                        temp_mask = (wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & np.isfinite(sample_k_vol[img_tag_used]) & np.isfinite(sample_k_geom[img_tag_used])
-                        temp_mask = temp_mask & (sample_cos_i[img_tag_used]> COSINE_I_MIN_THRESHOLD) &  (sample_slope[img_tag_used]> SAMPLE_SLOPE_MIN_THRESHOLD)  
-                      else:  
-                        temp_mask = (wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & np.isfinite(sample_k_vol) & np.isfinite(sample_k_geom)
-                        temp_mask = temp_mask & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SAMPLE_SLOPE_MIN_THRESHOLD)                        
-                    else:
-                      temp_mask = (wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & np.isfinite(sample_k_vol) & np.isfinite(sample_k_geom)
-                      temp_mask = temp_mask & (sample_cos_i> COSINE_I_MIN_THRESHOLD) &  (sample_slope> SAMPLE_SLOPE_MIN_THRESHOLD) 
-                
+
+                    wave_samples = wave_samples[img_tag_used]
+                    temp_mask = (wave_samples> REFL_MIN_THRESHOLD) & (wave_samples< REFL_MAX_THRESHOLD) & np.isfinite(sample_k_vol[img_tag_used]) & np.isfinite(sample_k_geom[img_tag_used])
+                    temp_mask = temp_mask & (sample_cos_i[img_tag_used]> COSINE_I_MIN_THRESHOLD) &  (sample_slope[img_tag_used]> SAMPLE_SLOPE_MIN_THRESHOLD)  
+                      
                     for ibin in range(total_bin):
                         
                         # skip BINs that has not enough samples in diagnostic output
@@ -988,25 +925,14 @@ def main():
                           continue
                         
                         
-                        if np.count_nonzero(temp_mask & ndvi_mask_dict[ibin]) < MIN_SAMPLE_COUNT:
-                          fVol,fGeo,fIso = (0,0,1)
-                          mask_sub = temp_mask & ndvi_mask_dict[ibin]
+                        if np.count_nonzero(temp_mask & ndvi_mask_dict[ibin][img_tag_used]) < MIN_SAMPLE_COUNT:
+                            fVol,fGeo,fIso = (0,0,1)
                         else:  
-                            if args.check_flight:
-                                if outlier_dict["b1"]["outlier_count"]>0:
-                                  if np.count_nonzero(temp_mask & ndvi_mask_dict[ibin]) < MIN_SAMPLE_COUNT:
-                                    fVol,fGeo,fIso = generate_brdf_coeff_band(wave_samples, temp_mask & ndvi_mask_dict[ibin][img_tag_used]  ,sample_k_vol[img_tag_used],sample_k_geom[img_tag_used])
-                                    mask_sub = temp_mask & ndvi_mask_dict[ibin][img_tag_used]
-                                else:
-                                    fVol,fGeo,fIso = generate_brdf_coeff_band(wave_samples, temp_mask & ndvi_mask_dict[ibin]  ,sample_k_vol,sample_k_geom)
-                                    mask_sub = temp_mask & ndvi_mask_dict[ibin]
-                            else:        
-                                fVol,fGeo,fIso = generate_brdf_coeff_band(wave_samples, temp_mask & ndvi_mask_dict[ibin]  ,sample_k_vol,sample_k_geom)
-                                mask_sub = temp_mask & ndvi_mask_dict[ibin]
+                            fVol,fGeo,fIso = generate_brdf_coeff_band(wave_samples, temp_mask & ndvi_mask_dict[ibin][img_tag_used], sample_k_vol[img_tag_used], sample_k_geom[img_tag_used])
                         
-                        #mask_sub = temp_mask & ndvi_mask_dict[ibin]
+                        mask_sub = temp_mask & ndvi_mask_dict[ibin][img_tag_used]
                         r_squared_array[ibin,2] = wave_samples[mask_sub].shape[0]
-                        est_r2, sample_nn, rmse_total = cal_r2(wave_samples[mask_sub],sample_k_vol[mask_sub],sample_k_geom[mask_sub],[fVol,fGeo,fIso])
+                        est_r2, sample_nn, rmse_total = cal_r2(wave_samples[mask_sub],sample_k_vol[img_tag_used][mask_sub],sample_k_geom[img_tag_used][mask_sub],[fVol,fGeo,fIso])
                         r_squared_array[ibin,w+3]=est_r2
                         rmse_array[ibin,w+3]=rmse_total
                         rmse_array[ibin,2] = r_squared_array[ibin,2]
@@ -1016,9 +942,9 @@ def main():
                         # update diagnostic information scene by scene
                         for img_order in range(total_image):
 
-                          img_mask_sub = (sample_img_tag==(img_order+1)) & mask_sub
+                          img_mask_sub = (sample_img_tag[img_tag_used]==(img_order+1)) & mask_sub
 
-                          est_r2, sample_nn, rmse_bin = cal_r2(wave_samples[img_mask_sub],sample_k_vol[img_mask_sub],sample_k_geom[img_mask_sub],[fVol,fGeo,fIso])
+                          est_r2, sample_nn, rmse_bin = cal_r2(wave_samples[img_mask_sub],sample_k_vol[img_tag_used][img_mask_sub],sample_k_geom[img_tag_used][img_mask_sub],[fVol,fGeo,fIso])
                           r_squared_array[ibin+(img_order+1)*total_bin,w+3]=est_r2
                           r_squared_array[ibin+(img_order+1)*total_bin,2]=max(sample_nn,int(r_squared_array[ibin+(img_order+1)*total_bin,2])) # update many times
 
@@ -1037,7 +963,7 @@ def main():
                     # update array for BRDF output diagnostic files 
                     mid_ndvi_list = brdf_coeff_array[:total_bin,0].astype(np.float)
                     if np.count_nonzero(brdf_coeff_array[:, 2+w]) > 3:
-                    # check linearity( NDVI as X v.s. kernel coefficients as Y ), save to diagnostic file, BIN by BIn, and wavelength by wavelength
+                    # check linearity( NDVI as X v.s. kernel coefficients as Y ), save to diagnostic file, BIN by BIN, and wavelength by wavelength
 
                       # volumetric coefficients 
                       temp_y = brdf_coeff_array[:total_bin, 2+w].astype(np.float)
